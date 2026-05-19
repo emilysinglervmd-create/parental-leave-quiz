@@ -469,7 +469,6 @@ function showResults() {
   setTimeout(() => {
     fetch("https://hook.us2.make.com/0oolybamsyvwlmvahmngmcioxv25qjrp", {
       method: "POST",
-      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         first_name: firstName,
