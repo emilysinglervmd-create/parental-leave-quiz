@@ -465,20 +465,41 @@ function showResults() {
   const pct = Math.round((totalScore / maxScore) * 100);
   const tier = tiers.find(t => totalScore >= t.min && totalScore <= t.max) || tiers[0];
 
-  // Fire webhook in background — never blocks results from loading
+  // Fire webhook via hidden form to bypass CORS
   setTimeout(() => {
-    fetch("https://hook.us2.make.com/0oolybamsyvwlmvahmngmcioxv25qjrp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://hook.us2.make.com/0oolybamsyvwlmvahmngmcioxv25qjrp';
+      form.target = 'hidden_iframe';
+      form.style.display = 'none';
+      const fields = {
         first_name: firstName,
         last_name: lastName,
         email: email,
-        quiz_score: totalScore,
+        quiz_score: String(totalScore),
         quiz_tier: tier.name,
-      }),
-    }).catch(err => console.log("Webhook error:", err));
-  }, 0);
+      };
+      Object.entries(fields).forEach(([key, val]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = val;
+        form.appendChild(input);
+      });
+      let iframe = document.getElementById('hidden_iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.name = 'hidden_iframe';
+        iframe.id = 'hidden_iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(() => form.remove(), 1000);
+    } catch(e) { console.log('Webhook error:', e); }
+  }, 500);
 
   // Build gaps with scores attached, sorted lowest score first
   const gapsWithScores = answers
