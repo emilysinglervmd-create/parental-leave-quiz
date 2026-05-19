@@ -465,39 +465,18 @@ function showResults() {
   const pct = Math.round((totalScore / maxScore) * 100);
   const tier = tiers.find(t => totalScore >= t.min && totalScore <= t.max) || tiers[0];
 
-  // Fire webhook via hidden form to bypass CORS
+  // Fire webhook via URL params — most compatible with Make.com
   setTimeout(() => {
     try {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'https://hook.us2.make.com/0oolybamsyvwlmvahmngmcioxv25qjrp';
-      form.target = 'hidden_iframe';
-      form.style.display = 'none';
-      const fields = {
+      const params = new URLSearchParams({
         first_name: firstName,
         last_name: lastName,
         email: email,
         quiz_score: String(totalScore),
         quiz_tier: tier.name,
-      };
-      Object.entries(fields).forEach(([key, val]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = val;
-        form.appendChild(input);
       });
-      let iframe = document.getElementById('hidden_iframe');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = 'hidden_iframe';
-        iframe.id = 'hidden_iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-      document.body.appendChild(form);
-      form.submit();
-      setTimeout(() => form.remove(), 1000);
+      const img = new Image();
+      img.src = 'https://hook.us2.make.com/0oolybamsyvwlmvahmngmcioxv25qjrp?' + params.toString();
     } catch(e) { console.log('Webhook error:', e); }
   }, 500);
 
